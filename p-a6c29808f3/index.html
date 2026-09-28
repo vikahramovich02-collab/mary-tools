@@ -126,6 +126,14 @@
     text-transform: uppercase;
   }
 
+  .field--wide { grid-column: 1 / -1; }
+  #term {
+    width: 100%; box-sizing: border-box; padding: 11px 13px;
+    border: 1px solid var(--line); border-radius: 11px; background: var(--ground);
+    color: var(--ink); font: 400 14px/1.2 var(--sans); outline: none;
+  }
+  #term:focus { border-color: var(--blue); }
+
   select {
     appearance: none;
     width: 100%;
@@ -356,6 +364,10 @@
           <span>Размещение</span>
           <select id="medium"></select>
         </label>
+        <label class="field field--wide">
+          <span>Кому отправляем (необязательно)</span>
+          <input id="term" type="text" placeholder="например: sber-ventures, ivan-petrov" autocomplete="off">
+        </label>
       </div>
 
       <div class="out">
@@ -460,6 +472,8 @@
   var SITE = "https://maryrose.by";
 
   var PAGES = [
+    ["/deck-en", "Презентация для инвесторов · EN", "deck-en"],
+    ["/deck", "Презентация для инвесторов · RU", "deck-ru"],
     ["/", "Главная", "main"],
     ["/blog/chto-takoe-crm", "Статья: почему CRM перестала растить продажи", "crm-prodazhi"],
     ["/blog/chat-bot-ili-ai-agent", "Статья: чат-бот или ИИ-агент", "bot-ili-agent"],
@@ -576,7 +590,16 @@
       + "?utm_source=" + platSel.value
       + "&utm_medium=" + medSel.value
       + "&utm_campaign=" + campaign()
-      + "&utm_content=" + account;
+      + "&utm_content=" + account
+      + (term() ? "&utm_term=" + term() : "");
+  }
+
+  /* кому отправили ссылку: латиница, нижний регистр, дефисы — чтобы в таблице не было «Сбер» и «sber» отдельными строками */
+  var TR = {а:"a",б:"b",в:"v",г:"g",д:"d",е:"e",ё:"e",ж:"zh",з:"z",и:"i",й:"y",к:"k",л:"l",м:"m",н:"n",о:"o",п:"p",р:"r",с:"s",т:"t",у:"u",ф:"f",х:"h",ц:"ts",ч:"ch",ш:"sh",щ:"sch",ъ:"",ы:"y",ь:"",э:"e",ю:"yu",я:"ya"};
+  function term() {
+    var v = (document.getElementById("term").value || "").toLowerCase().trim();
+    v = v.replace(/[а-яё]/g, function (c) { return TR[c]; });
+    return v.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
   }
 
   function copyTo(button, text) {
@@ -643,6 +666,7 @@
     render();
   });
   [pageSel, accSel, medSel].forEach(function (el) { el.addEventListener("change", render); });
+  document.getElementById("term").addEventListener("input", render);
 
   document.getElementById("copy").addEventListener("click", function () {
     copyTo(this, build(accSel.value));
